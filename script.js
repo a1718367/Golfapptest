@@ -110,7 +110,7 @@ function displayforecast(obj){
 var displaycompass = function(){
   
   var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  if (iOS === false){
+  if (iOS === true){
 
     var createButton = document.createElement("div");  
     createButton.innerHTML = "Compass";    
