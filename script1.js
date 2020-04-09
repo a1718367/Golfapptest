@@ -133,7 +133,7 @@ $('#htotal').text(sum)
 }
 
 function reset(){
-    localStorage.clear("userscore");
+    localStorage.removeItem("userscore");
     usersc=[];
     $('#htotal').text(0);
     $('#start').html("");

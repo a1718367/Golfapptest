@@ -267,7 +267,7 @@ function rendermap(lat,log){
 }
 
 $('#reset').on('click',function(){
-  localStorage.clear('course_data');
+  localStorage.removeItem('course_data');
   userlocal=[];
   initMap(lat,lon);
   
