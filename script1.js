@@ -138,6 +138,9 @@ function reset(){
     $('#htotal').text(0);
     $('#start').html("");
 }
+
+
+
 function initMap(latt, lon) {
   // The location of Uluru
   var location = {lat: latt, lng: lon};

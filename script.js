@@ -7,7 +7,7 @@ var options = {
     timeout: 5000,
     maximumAge:0
 };
-
+var userlocal = JSON.parse(localStorage.getItem("course_data")) || [];
 navigator.geolocation.getCurrentPosition(success,error,options);
 
   
@@ -22,7 +22,11 @@ function success(pos){
   console.log(latn, lonn)
   info(latn,lonn);
   forcast(latn, lonn);
-  //initMap(latn, lonn);
+  initMap(latn, lonn);
+  if(userlocal.length!=0){
+  rendermap(latn,lonn);
+  }
+  
 
   }
   
@@ -104,8 +108,6 @@ function displayforecast(obj){
   
 }
 
-
-//Andy's - Compass
 
 var displaycompass = function(){
   
@@ -198,30 +200,80 @@ stackoverflow was used to find the ollowing code to gain access to movement and 
 displaycompass()
 
 
-//Matt's - Map marking
-
-
 function initMap(lat, log) {
-    var Latlog = new google.maps.LatLng(lat, log);
+    var latlog = new google.maps.LatLng(lat, log);
     var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 25, center: Latlog,
-      mapTypeId: 'satellite'
+      zoom: 17, center: latlog,
+  
+    });
+        new google.maps.Marker({position: latlog, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/shapes/golf.png'});
+
+    google.maps.event.addListener(map, 'click', function(event) {
+      var latt = event.latLng.lat();
+      var long = event.latLng.lng()
+      console.log(latt, long);
+      new google.maps.Marker({position: event.latLng, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+      storelocation(latt,long);
+      
     });
 
-
-    map.addListener('click', function(e) {
-        console.log("click");
-        placeMarkerAndPanTo(e.latLng, map);
-    });
-
-
-    function placeMarkerAndPanTo(latLng, map) {
-    var marker = new google.maps.Marker({
-        position: latLng,
-        map: map
-    });
-    }
 };
+
+
+function storelocation(lat, lon){
+  const coursedata = {
+    holenum: 1,
+    latitude: lat,
+    longitude: lon
+  }
+  userlocal.push(coursedata);
+  localStorage.setItem("course_data", JSON.stringify(userlocal));
+}
+
+
+function rendermap(lat,log){
+  var latlog = new google.maps.LatLng(lat, log);
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 17, center: latlog,
+
+  });
+      new google.maps.Marker({position: latlog, map: map, 
+      icon: 'https://maps.google.com/mapfiles/kml/shapes/golf.png'});
+
+  var usermap = JSON.parse(localStorage.getItem("course_data"));
+
+  
+  for(i=0;i<usermap.length;i++){
+    var maplatt = usermap[i].latitude;
+    var maplon =  usermap[i].longitude;
+    var userlatlon = new google.maps.LatLng(maplatt,maplon);
+    new google.maps.Marker({position: userlatlon, map: map, 
+      icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+    
+  }
+
+      google.maps.event.addListener(map, 'click', function(event) {
+      var latt = event.latLng.lat();
+      var long = event.latLng.lng()
+      console.log(latt, long);
+      new google.maps.Marker({position: event.latLng, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+      storelocation(latt,long);
+      
+    })
+
+}
+
+$('#reset').on('click',function(){
+  localStorage.clear('course_data');
+  userlocal=[];
+  initMap(lat,lon);
+  
+  
+})
+
 
 function renderCourseMap(userpos) {
 
@@ -334,4 +386,4 @@ function renderCourseMap(userpos) {
 
 } // renderCourseMap()
 
-google.maps.event.addDomListener(window, 'load', renderCourseMap)
+//google.maps.event.addDomListener(window, 'load', renderCourseMap)
