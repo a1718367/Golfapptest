@@ -1,4 +1,53 @@
+var lat, lon;
+var apikey ='08d6ce794cdf279b6219aa4a39a325d7';
+var options = {
+    enableHighAccuracy:true,
+    timeout: 5000,
+    maximumAge:0
+};
+var userlocal = JSON.parse(localStorage.getItem("course_data")) || [];
+navigator.geolocation.getCurrentPosition(success,error,options);
 
+  
+function success(pos){
+  lat = pos.coords.latitude;
+  lon = pos.coords.longitude;
+  console.log("Latitude = " + lat + " " + "Longitude = " + lon);
+  $('#lat').text(lat);
+  $('#lon').text(lon);
+  latn = parseFloat(lat);
+  lonn = parseFloat(lon);
+  console.log(latn, lonn)
+
+  initMap(latn, lonn);
+  if(userlocal.length!=0){
+  rendermap(latn,lonn);
+  }
+  
+
+  }
+  
+function error(error){
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        console.log("User denied the request for Geolocation.")
+        break;
+      case error.POSITION_UNAVAILABLE:
+        console.log("Location information is unavailable.")
+        break;
+      case error.TIMEOUT:
+        console.log("The request to get user location timed out.")
+        break;
+      case error.UNKNOWN_ERROR:
+        console.log("An unknown error occurred.")
+        break;
+    }
+  }
+
+
+//*************/
+//Score card //
+//********* */
 $(document).ready(function(){
 r = 0
     localscore();
@@ -8,7 +57,7 @@ r = 0
         nexthole(0);
     })
     $('body').on('click','.nxtbtn',function(){
-        
+        navigator.geolocation.getCurrentPosition(success,error,options);
         var q = $(this).siblings('.holen').text();
         console.log(q);
         var t = $(this).siblings('.score').text();
@@ -140,13 +189,78 @@ function reset(){
 }
 
 
+function initMap(lat, log) {
+    var latlog = new google.maps.LatLng(lat, log);
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 17, center: latlog,
+  
+    });
+        new google.maps.Marker({position: latlog, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/shapes/golf.png'});
 
-function initMap(latt, lon) {
-  // The location of Uluru
-  var location = {lat: latt, lng: lon};
-  // The map, centered at Uluru
-  var map = new google.maps.Map(
-      document.getElementById('map'), {zoom: 17, center: location, mapTypeId: 'satellite'});
-  // The marker, positioned at Uluru
-  var marker = new google.maps.Marker({position: location, map: map});
+    google.maps.event.addListener(map, 'click', function(event) {
+      var latt = event.latLng.lat();
+      var long = event.latLng.lng()
+      console.log(latt, long);
+      new google.maps.Marker({position: event.latLng, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+      storelocation(latt,long);
+      
+    });
+
+};
+
+
+function storelocation(lat, lon){
+  const coursedata = {
+    holenum: 1,
+    latitude: lat,
+    longitude: lon
+  }
+  userlocal.push(coursedata);
+  localStorage.setItem("course_data", JSON.stringify(userlocal));
 }
+
+
+function rendermap(lat,log){
+  var latlog = new google.maps.LatLng(lat, log);
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 17, center: latlog,
+
+  });
+      new google.maps.Marker({position: latlog, map: map, 
+      icon: 'https://maps.google.com/mapfiles/kml/shapes/golf.png'});
+
+  var usermap = JSON.parse(localStorage.getItem("course_data"));
+
+  
+  for(i=0;i<usermap.length;i++){
+    var maplatt = usermap[i].latitude;
+    var maplon =  usermap[i].longitude;
+    var userlatlon = new google.maps.LatLng(maplatt,maplon);
+    new google.maps.Marker({position: userlatlon, map: map, 
+      icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+    
+  }
+
+      google.maps.event.addListener(map, 'click', function(event) {
+      var latt = event.latLng.lat();
+      var long = event.latLng.lng()
+      console.log(latt, long);
+      new google.maps.Marker({position: event.latLng, map: map, 
+        icon: 'https://maps.google.com/mapfiles/kml/pal2/icon13.png'});
+      storelocation(latt,long);
+      
+    })
+
+}
+
+$('#reset').on('click',function(){
+  localStorage.removeItem('course_data');
+  userlocal=[];
+  initMap(lat,lon);
+  
+  
+})
+
+
